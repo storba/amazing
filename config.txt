@@ -1,5 +1,5 @@
 # Default configuration for A-Maze-ing
-# One KEY=VALUE per line. 
+# One KEY=VALUE per line.
 # Lines starting with # are comments.
 
 WIDTH=25
@@ -11,4 +11,4 @@ PERFECT=True
 # Optional:
 SEED=123
 # DISPLAY=ascii
-ALGORITHM=backtracker
+ALGORITHMbacktracker
