@@ -1,86 +1,101 @@
 from dataclasses import dataclass
 
-#@dataclass(frozen=True)
+# @dataclass(frozen=True)
 class MazeConfig:
-	"""
-	Configuration class for parsing and storing settings.
-	"""
-	width: int
-	height: int
-	entry: tuple[int, int]
-	exit_m: tuple[int, int]
-	output_file: str
-	perfect: bool
-	seed: int | None = None
-	display: str = "ascii"
-	def __init__(self, config_path: str) -> None:
-		try:
-			with open(config_path) as file:
-				for line in file.readlines():
-					if line.strip().startswith("#") or len(line.strip()) == 0:
-						continue
-					sep_idx = line.find("=")
-					if sep_idx == -1:
-						raise Exception(f"Incorrect line: '{line.strip()}'")
-					left_arg = line[:sep_idx].strip()
-					right_arg = line[sep_idx + 1:].strip()
-					try:
-						if left_arg == "WIDTH" and int(right_arg) > 0 and int(right_arg) < 300:
-							self.width = int(right_arg)
-						elif left_arg == "HEIGHT" and int(right_arg) > 0 and int(right_arg) < 150:
-							self.height = int(right_arg)
-						elif (left_arg == "ENTRY" or left_arg == "EXIT"):
-							if (right_arg.find(",") == -1):
-								raise Exception(f"Incorrect coordinates format: {line.strip()}")
-							coords = right_arg.split(",")
-							if (len(coords) != 2):
-								raise ValueError(f"Incorrect coordinates: '{line.strip()}'.")
-							tuple_coords = (int(coords[0].strip()), int(coords[1].strip()))
-							if not check_coords_range(tuple_coords, self):
-									raise Exception(f"Incorrect coordinates range:'{line.strip()}'")
-							if left_arg == "ENTRY":
-								self.entry = tuple_coords
-							else:
-								self.exit_m = tuple_coords
-						elif left_arg == "OUTPUT_FILE":
-							self.output_file = right_arg
-						elif left_arg == "PERFECT":
-							if right_arg == "True":
-								self.perfect = True
-							elif right_arg == "False":
-								self.perfect = False
-							else:
-								raise Exception(f"Unknown bool value:'{line.strip()}'")
-						elif left_arg == "SEED":
-							self.seed = int(right_arg)
-						elif left_arg == "DISPLAY":
-							if not(right_arg == "ascii" or right_arg == "window"):
-								raise Exception(f"Unknown display type:'{line.strip()}'")
-							self.display = right_arg
-						else:
-							raise Exception(f"Unknown line: '{line.strip()}'.")
-					except ValueError:
-						raise ValueError(f"Incorrect value in line: '{line.strip()}'")
-					except Exception as e:
-						raise e
-					#print(line)
-		except FileNotFoundError:
-			raise FileNotFoundError(f"File '{config_path}' does not exist")
-		except PermissionError:
-			raise PermissionError(f"File '{config_path}' exist, but you dont have correct permitions")
-		except ValueError as e:
-			raise e
-		except Exception as e:
-			raise e
-	def validate_config(self) -> None:
-		pass
+    """Configuration class for parsing and storing settings."""
 
-def check_coords_range(coords: tuple, cfg: MazeConfig) -> bool:
-	if not coords[0] in range(0, cfg.width + 1):
-		return False
-	if not coords[1] in range(0, cfg.height + 1):
-		return False
-	return True
+    width: int | None = None
+    height: int | None = None
+    entry: tuple[int, int] | None = None
+    exit_m: tuple[int, int] | None = None
+    output_file: str | None = None
+    perfect: bool | None = None
+    seed: int | None = None
+    display: str = "ascii"
+
+    def __init__(self, config_path: str) -> None:
+        try:
+            with open(config_path) as file:
+                for line in file:
+                    line = line.strip()
+                    if line.startswith("#") or not line:
+                        continue
+                    
+                    sep_idx = line.find("=")
+                    if sep_idx == -1:
+                        raise ValueError(f"Incorrect line format: '{line}'")
+                    left_arg = line[:sep_idx].strip()
+                    right_arg = line[sep_idx + 1:].strip()
+                    self._parse_line(left_arg, right_arg, line)
+            self.validate_config()
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File '{config_path}' does not exist")
+        except PermissionError:
+            raise PermissionError(f"Permission denied for '{config_path}'")
+
+    def _parse_line(self, key: str, value: str, original_line: str) -> None:
+        try:
+            if key == "WIDTH":
+                self.width = int(value)
+            elif key == "HEIGHT":
+                self.height = int(value)
+            elif key in ("ENTRY", "EXIT"):
+                coords = value.split(",")
+                if len(coords) != 2:
+                    raise ValueError(f"Incorrect coordinates: '{original_line}'")
+                x_str = coords[0].strip()
+                y_str = coords[1].strip()                
+                if not x_str or not y_str:
+                    raise ValueError(f"Missing coordinate value: '{original_line}'")
+                parsed_coords = (int(x_str), int(y_str))
+                if key == "ENTRY":
+                    self.entry = parsed_coords
+                else:
+                    self.exit_m = parsed_coords
+            elif key == "OUTPUT_FILE":
+                self.output_file = value
+            elif key == "PERFECT":
+                if value == "True":
+                    self.perfect = True
+                elif value == "False":
+                    self.perfect = False
+                else:
+                    raise ValueError(f"Unknown bool value: '{original_line}'")
+            elif key == "SEED":
+                self.seed = int(value)
+            elif key == "DISPLAY":
+                if value not in ("ascii", "window"):
+                    raise ValueError(f"Unknown display type: '{original_line}'")
+                self.display = value
+            else:
+                raise ValueError(f"Unknown parameter: '{original_line}'")
+        except ValueError as e:
+            raise ValueError(f"Invalid value in line '{original_line}': {e}")
+
+    def validate_config(self) -> None:
+        missing_fields = []
+        if self.width is None: missing_fields.append("WIDTH")
+        if self.height is None: missing_fields.append("HEIGHT")
+        if self.entry is None: missing_fields.append("ENTRY")
+        if self.exit_m is None: missing_fields.append("EXIT")
+        if self.output_file is None: missing_fields.append("OUTPUT_FILE")
+        if self.perfect is None: missing_fields.append("PERFECT")
+
+        if missing_fields:
+            raise ValueError(f"Missing mandatory configuration keys: {', '.join(missing_fields)}")
+
+        if not (0 < self.width < 300):
+            raise ValueError(f"WIDTH must be between 1 and 299, got {self.width}")
+        if not (0 < self.height < 150):
+            raise ValueError(f"HEIGHT must be between 1 and 149, got {self.height}")
+        if not (0 <= self.entry[0] < self.width and 0 <= self.entry[1] < self.height):
+            raise ValueError(f"ENTRY coordinates {self.entry} are out of bounds")
+        if not (0 <= self.exit_m[0] < self.width and 0 <= self.exit_m[1] < self.height):
+            raise ValueError(f"EXIT coordinates {self.exit_m} are out of bounds")
+        if self.entry == self.exit_m:
+            raise ValueError("ENTRY and EXIT coordinates cannot be same")
+        if not self.output_file.endswith(".txt"):
+            raise ValueError(f"Output file is not .txt: {self.output_file}")
 
 # def main():
 # 	MazeConfig("config.txt")

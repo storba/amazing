@@ -2,10 +2,10 @@
 # One KEY=VALUE per line.
 # Lines starting with # are comments.
 
-WIDTH=3
+WIDTH=33
 HEIGHT=19
 ENTRY=3,3
-EXIT=3,7
+EXIT=3,4
 OUTPUT_FILE=maze.txt
 PERFECT=True
 # Optional:
