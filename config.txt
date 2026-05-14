@@ -2,13 +2,12 @@
 # One KEY=VALUE per line.
 # Lines starting with # are comments.
 
-WIDTH=25
+WIDTH=3
 HEIGHT=19
-ENTRY=0,0
-EXIT=24,18
+ENTRY=3,3
+EXIT=3,7
 OUTPUT_FILE=maze.txt
 PERFECT=True
 # Optional:
 SEED=123
-# DISPLAY=ascii
-ALGORITHMbacktracker
+DISPLAY=window

@@ -14,6 +14,26 @@ from maze_generator import Maze
 # )
 # maze = Maze(cfg)
 
+
+	# width: int
+	# height: int
+	# entry: tuple[int, int]
+	# exit_m: tuple[int, int]
+	# output_file: str
+	# perfect: bool
+	# seed: int | None = None
+	# display: str = "ascii"
+
+def print_config(cfg: MazeConfig) -> None:
+    print(f"Width: {cfg.width}")
+    print(f"Height: {cfg.height}")
+    print(f"Entry: {cfg.entry[0]}, {cfg.entry[1]}")
+    print(f"Exit: {cfg.exit_m[0]}, {cfg.exit_m[1]}")
+    print(f"Output file: {cfg.output_file}")
+    print(f"Perfect: {cfg.perfect}")
+    print(f"Seed: {cfg.seed}")
+    print(f"Display: {cfg.display}")
+
 def main():
 
     if len(sys.argv) < 2:
@@ -21,9 +41,12 @@ def main():
         return
     try:
         config = MazeConfig(sys.argv[1])
+        print_config(config)
     except FileNotFoundError as e:
         print(e.args[0])
     except PermissionError:
+        print(e.args[0])
+    except ValueError as e:
         print(e.args[0])
     except Exception as e:
         print(e.args[0])
