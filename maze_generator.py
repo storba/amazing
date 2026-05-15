@@ -31,7 +31,7 @@ class CellGrid:
         self.grid[row][col] = cell
     def rm_wall(self, row: int, col: int, wall: int) -> tuple[int, int]:
         """ remove wall in CellGrid"""
-        if wall == 0:
+        if wall == 0: 
             self.grid[row][col].north = 0
             self.grid[row-1][col].south = 0
             return (row-1, col)
@@ -80,12 +80,27 @@ class Maze():
                 return(self.random.choice([0, 2, 3]))
         elif row == self.config.width - 1:
             return(self.random.choice([0, 1, 3]))
+    
+    FORTY_TWO = {
+        (0,0),(1,0),(2,0),(2,1),(2,2),(3,2),(4,2),           # "4"
+        (0,4),(0,5),(0,6),(1,6),(2,4),(2,5),(2,6),(3,4),(4,4),(4,5),(4,6),  # "2"
+    }
+    def is_42_cell(self, row: int, col: int) -> bool:
+        if self.config.height < 7 or self.config.width < 9:
+            return False
+        start_row = (self.config.height - 5) // 2
+        start_col = (self.config.width - 7) // 2
+        return (row - start_row, col - start_col) in self.FORTY_TWO
+
     def generate(self) -> None:
         """Generate the maze."""
         stack = []
         row, col = self.config.entry[0], self.config.entry[1]
         self.grid.get(row, col).visited = True
-        # self.draw_maze_in_terminal()
+        for r in range(self.config.height):
+            for c in range(self.config.width):
+                if self.is_42_cell(r, c):
+                    self.grid.get(r, c).visited = True
         while True:
             # find unvisited neighbors:
             neighbors = []
@@ -107,19 +122,7 @@ class Maze():
                 row, col = stack.pop()  # backtrack
             else:
                 break  # all cells visited
-        # self.grid.get(self.config.entry[0], self.config.entry[1]).visited = True
-        # row = self.config.entry[0]
-        # col = self.config.entry[1]
-        # print(f"row={row} col={col}")
-        # while not (row == self.config.exit_m[0] and col ==self.config.exit_m[1]):
-        #     i = self.maze_random(row , col)
-        #     # print(f"i={i}")
-        #     row, col = self.grid.rm_wall(row, col, i)
-        #     self.grid.get(row, col).visited = True
-        #     self.draw_maze_in_terminal()
-        #     # print(f"row={row} col={col}")
-        # self.grid.get(self.config.exit_m[0], self.config.exit_m[1]).visited = True
-
+    
     def print_maze_tofile(self, filename: str) -> None:
         """Print the maze to a file."""
         with open(filename, 'w') as file:
@@ -132,7 +135,12 @@ class Maze():
             row_str = '|'
             for c in range(self.config.width):
                 cell = self.grid.get(r, c)
-                row_str += '   '
+                if c == self.config.entry[0] and r == self.config.entry[1]:
+                    row_str += ' S ' # entry
+                elif  c == self.config.exit_m[0] and r == self.config.exit_m[1]:
+                    row_str += ' E ' # exit
+                else:
+                    row_str += '   '
                 row_str += ' ' if cell.east == 0 else '|'
             print(row_str)
             bottom = '+'
