@@ -3,26 +3,6 @@ import random
 import sys
 from config_parser import MazeConfig
 from maze_generator import Maze
-# cfg = MazeConfig(
-#     width=20,
-#     height=15,
-#     entry=(0, 0),
-#     exit_=(19, 14),
-#     output_file="maze.txt",
-#     perfect=True,
-#     seed=42,
-# )
-# maze = Maze(cfg)
-
-
-	# width: int
-	# height: int
-	# entry: tuple[int, int]
-	# exit_m: tuple[int, int]
-	# output_file: str
-	# perfect: bool
-	# seed: int | None = None
-	# display: str = "ascii"
 
 def print_config(cfg: MazeConfig) -> None:
     print(f"Width: {cfg.width}")
@@ -50,6 +30,9 @@ def main():
         print(e.args[0])
     except Exception as e:
         print(e.args[0])
+    maze = Maze(config)
+    maze.print_maze_tofile(config.output_file)
+    maze.draw_maze_in_terminal()
 if __name__ == "__main__":
     main()
 #need to read name of config file
