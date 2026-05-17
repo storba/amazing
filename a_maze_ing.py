@@ -32,7 +32,8 @@ def main():
         print(e.args[0])
     maze = Maze(config)
     maze.print_maze_tofile(config.output_file)
-    maze.draw_maze_in_terminal()
+    solution_path = maze.solve()
+    maze.draw_maze_in_terminal(solution_path)
 if __name__ == "__main__":
     main()
 #need to read name of config file

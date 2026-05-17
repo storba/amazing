@@ -1,5 +1,6 @@
 from config_parser import MazeConfig
 from dataclasses import dataclass
+from collections import deque
 import random
 
 
@@ -129,16 +130,21 @@ class Maze():
             for row in self.grid.grid:
                 file.write(''.join(str(cell) for cell in row))
                 file.write('\n')
-    def draw_maze_in_terminal(self) -> None:
+    def draw_maze_in_terminal(self, path_str: str = "") -> None:
+        path_coords = self._get_path_coordinates(path_str) if path_str else set()
         print('+' + '+'.join('---' for _ in range(self.config.width)) + '+')
         for r in range(self.config.height):
             row_str = '|'
             for c in range(self.config.width):
                 cell = self.grid.get(r, c)
                 if c == self.config.entry[0] and r == self.config.entry[1]:
-                    row_str += ' S ' # entry
+                    row_str += '█S█' # entry
                 elif  c == self.config.exit_m[0] and r == self.config.exit_m[1]:
-                    row_str += ' E ' # exit
+                    row_str += '█E█' # exit
+                elif self.is_42_cell(r, c):
+                    row_str += '███'
+                elif (r, c) in path_coords:
+                    row_str += ' X '
                 else:
                     row_str += '   '
                 row_str += ' ' if cell.east == 0 else '|'
@@ -149,3 +155,50 @@ class Maze():
                 bottom += '   ' if cell.south == 0 else '---'
                 bottom += '+'
             print(bottom)
+    
+    def solve(self) -> str:
+        """Finds the shortest path from entry to exit using BFS."""
+        start_col, start_row = self.config.entry
+        target_col, target_row = self.config.exit_m
+        queue = deque([(start_row, start_col, "")])
+        
+        visited = set()
+        visited.add((start_row, start_col))
+
+        while queue:
+            r, c, path = queue.popleft()
+            if r == target_row and c == target_col:
+                return path
+
+            cell = self.grid.get(r, c)
+
+            if r > 0 and cell.north == 0 and (r - 1, c) not in visited:
+                visited.add((r - 1, c))
+                queue.append((r - 1, c, path + "N"))            
+            if c < self.config.width - 1 and cell.east == 0 and (r, c + 1) not in visited:
+                visited.add((r, c + 1))
+                queue.append((r, c + 1, path + "E"))            
+            if r < self.config.height - 1 and cell.south == 0 and (r + 1, c) not in visited:
+                visited.add((r + 1, c))
+                queue.append((r + 1, c, path + "S"))            
+            if c > 0 and cell.west == 0 and (r, c - 1) not in visited:
+                visited.add((r, c - 1))
+                queue.append((r, c - 1, path + "W"))
+
+        return "No valid path found"
+    
+    def _get_path_coordinates(self, path_str: str) -> set[tuple[int, int]]:
+        c, r = self.config.entry[0], self.config.entry[1]
+        coords = set()
+        
+        for move in path_str:
+            if move == 'N': r -= 1
+            elif move == 'S': r += 1
+            elif move == 'E': c += 1
+            elif move == 'W': c -= 1
+            coords.add((r, c))
+            
+        exit_r, exit_c = self.config.exit_m[1], self.config.exit_m[0]
+        coords.discard((exit_r, exit_c))
+        
+        return coords

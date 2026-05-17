@@ -9,5 +9,5 @@ EXIT=19, 9
 OUTPUT_FILE=maze.txt
 PERFECT=True
 # Optional:
-SEED=123
+SEED=0
 DISPLAY=window
