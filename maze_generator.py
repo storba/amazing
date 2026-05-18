@@ -140,15 +140,17 @@ class Maze():
     
     def print_maze_tofile(self, filename: str, solution_path: str) -> None:
         """Print the maze to a file."""
-        with open(filename, 'w') as file:
-            for row in self.grid.grid:
-                file.write(''.join(str(cell) for cell in row))
+        try:
+            with open(filename, 'w') as file:
+                for row in self.grid.grid:
+                    file.write(''.join(str(cell) for cell in row))
+                    file.write('\n')
                 file.write('\n')
-            file.write('\n')
-            file.write(f"{self.config.entry[0]},{self.config.entry[1]}\n")
-            file.write(f"{self.config.exit_m[0]},{self.config.exit_m[1]}\n")
-            file.write(solution_path + '\n')
-
+                file.write(f"{self.config.entry[0]},{self.config.entry[1]}\n")
+                file.write(f"{self.config.exit_m[0]},{self.config.exit_m[1]}\n")
+                file.write(solution_path + '\n')
+        except Exception as e:
+            print(f"Output_file error: {e}")
     def draw_maze_in_terminal(self, path_str: str = "") -> None:
         path_map = self._get_path_map(path_str) if path_str else {}
         print('+' + '+'.join('---' for _ in range(self.config.width)) + '+')
