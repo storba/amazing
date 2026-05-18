@@ -15,13 +15,20 @@ def print_config(cfg: MazeConfig) -> None:
     print(f"Display: {cfg.display}")
 
 def main():
-
     if len(sys.argv) < 2:
         print("Not enough arguments")
         return
     try:
         config = MazeConfig(sys.argv[1])
-        print_config(config)
+        # print_config(config)
+
+        maze = Maze(config)
+        if not config.perfect:
+            maze._make_imperfect()
+        
+        solution_path = maze.solve()
+        maze.print_maze_tofile(config.output_file, solution_path)
+        maze.draw_maze_in_terminal(solution_path)
     except FileNotFoundError as e:
         print(e.args[0])
     except PermissionError:
@@ -30,10 +37,6 @@ def main():
         print(e.args[0])
     except Exception as e:
         print(e.args[0])
-    maze = Maze(config)
-    maze.print_maze_tofile(config.output_file)
-    solution_path = maze.solve()
-    maze.draw_maze_in_terminal(solution_path)
 if __name__ == "__main__":
     main()
 #need to read name of config file

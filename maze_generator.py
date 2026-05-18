@@ -31,7 +31,7 @@ class CellGrid:
         """Set the Cell at position (row, col)."""
         self.grid[row][col] = cell
     def rm_wall(self, row: int, col: int, wall: int) -> tuple[int, int]:
-        """ remove wall in CellGrid"""
+        """Remove wall in CellGrid"""
         if wall == 0: 
             self.grid[row][col].north = 0
             self.grid[row-1][col].south = 0
@@ -48,6 +48,20 @@ class CellGrid:
             self.grid[row][col].west = 0
             self.grid[row][col-1].east = 0
             return (row, col-1)
+    def restore_wall(self, row: int, col: int, wall: int) -> None:
+        """Restore wall in CellGrid"""
+        if wall == 0: 
+            self.grid[row][col].north = 1
+            self.grid[row-1][col].south = 1
+        elif wall == 1:
+            self.grid[row][col].east = 1
+            self.grid[row][col+1].west = 1
+        elif wall == 2:
+            self.grid[row][col].south = 1
+            self.grid[row+1][col].north = 1
+        elif wall == 3:
+            self.grid[row][col].west = 1
+            self.grid[row][col-1].east = 1
 
 class Maze():
     def __init__(self, config: MazeConfig) -> None:
@@ -81,11 +95,11 @@ class Maze():
                 return(self.random.choice([0, 2, 3]))
         elif row == self.config.width - 1:
             return(self.random.choice([0, 1, 3]))
-    
     FORTY_TWO = {
         (0,0),(1,0),(2,0),(2,1),(2,2),(3,2),(4,2),           # "4"
         (0,4),(0,5),(0,6),(1,6),(2,4),(2,5),(2,6),(3,4),(4,4),(4,5),(4,6),  # "2"
     }
+
     def is_42_cell(self, row: int, col: int) -> bool:
         if self.config.height < 7 or self.config.width < 9:
             return False
@@ -96,7 +110,7 @@ class Maze():
     def generate(self) -> None:
         """Generate the maze."""
         stack = []
-        row, col = self.config.entry[0], self.config.entry[1]
+        col, row = self.config.entry[0], self.config.entry[1]
         self.grid.get(row, col).visited = True
         for r in range(self.config.height):
             for c in range(self.config.width):
@@ -105,13 +119,13 @@ class Maze():
         while True:
             # find unvisited neighbors:
             neighbors = []
-            if row > 0 and not self.grid.get(row-1, col).visited:
+            if row > 0 and not self.grid.get(row-1, col).visited and not self.is_42_cell(row-1, col):
                 neighbors.append((row-1, col, 0))  # north
-            if col < self.config.width - 1 and not self.grid.get(row, col+1).visited:
+            if col < self.config.width - 1 and not self.grid.get(row, col+1).visited and not self.is_42_cell(row, col+1):
                 neighbors.append((row, col+1, 1))  # east
-            if row < self.config.height - 1 and not self.grid.get(row+1, col).visited:
+            if row < self.config.height - 1 and not self.grid.get(row+1, col).visited and not self.is_42_cell(row+1, col):
                 neighbors.append((row+1, col, 2))  # south
-            if col > 0 and not self.grid.get(row, col-1).visited:
+            if col > 0 and not self.grid.get(row, col-1).visited and not self.is_42_cell(row, col-1):
                 neighbors.append((row, col-1, 3))  # west
             
             if neighbors:
@@ -124,14 +138,19 @@ class Maze():
             else:
                 break  # all cells visited
     
-    def print_maze_tofile(self, filename: str) -> None:
+    def print_maze_tofile(self, filename: str, solution_path: str) -> None:
         """Print the maze to a file."""
         with open(filename, 'w') as file:
             for row in self.grid.grid:
                 file.write(''.join(str(cell) for cell in row))
                 file.write('\n')
+            file.write('\n')
+            file.write(f"{self.config.entry[0]},{self.config.entry[1]}\n")
+            file.write(f"{self.config.exit_m[0]},{self.config.exit_m[1]}\n")
+            file.write(solution_path + '\n')
+
     def draw_maze_in_terminal(self, path_str: str = "") -> None:
-        path_coords = self._get_path_coordinates(path_str) if path_str else set()
+        path_map = self._get_path_map(path_str) if path_str else {}
         print('+' + '+'.join('---' for _ in range(self.config.width)) + '+')
         for r in range(self.config.height):
             row_str = '|'
@@ -143,8 +162,8 @@ class Maze():
                     row_str += '█E█' # exit
                 elif self.is_42_cell(r, c):
                     row_str += '███'
-                elif (r, c) in path_coords:
-                    row_str += ' X '
+                elif (r, c) in path_map:
+                    row_str += path_map[(r, c)]
                 else:
                     row_str += '   '
                 row_str += ' ' if cell.east == 0 else '|'
@@ -172,33 +191,107 @@ class Maze():
 
             cell = self.grid.get(r, c)
 
-            if r > 0 and cell.north == 0 and (r - 1, c) not in visited:
+            if r > 0 and cell.north == 0 and (r - 1, c) not in visited and not self.is_42_cell(r - 1, c):
                 visited.add((r - 1, c))
                 queue.append((r - 1, c, path + "N"))            
-            if c < self.config.width - 1 and cell.east == 0 and (r, c + 1) not in visited:
+            if c < self.config.width - 1 and cell.east == 0 and (r, c + 1) not in visited and not self.is_42_cell(r, c + 1):
                 visited.add((r, c + 1))
                 queue.append((r, c + 1, path + "E"))            
-            if r < self.config.height - 1 and cell.south == 0 and (r + 1, c) not in visited:
+            if r < self.config.height - 1 and cell.south == 0 and (r + 1, c) not in visited and not self.is_42_cell(r + 1, c):
                 visited.add((r + 1, c))
                 queue.append((r + 1, c, path + "S"))            
-            if c > 0 and cell.west == 0 and (r, c - 1) not in visited:
+            if c > 0 and cell.west == 0 and (r, c - 1) not in visited and not self.is_42_cell(r, c - 1):
                 visited.add((r, c - 1))
                 queue.append((r, c - 1, path + "W"))
 
         return "No valid path found"
     
-    def _get_path_coordinates(self, path_str: str) -> set[tuple[int, int]]:
+    def _get_path_map(self, path_str: str) -> dict[tuple[int, int], str]:
+        """Перетворює рядок шляху на словник координат зі стрілочками."""
         c, r = self.config.entry[0], self.config.entry[1]
-        coords = set()
+        path_dict = {}        
+        arrows = {
+            'N': ' ↑ ',
+            'S': ' ↓ ',
+            'E': ' → ',
+            'W': ' ← '
+        }
         
-        for move in path_str:
+        for i in range(len(path_str)):
+            move = path_str[i]
+            
             if move == 'N': r -= 1
             elif move == 'S': r += 1
             elif move == 'E': c += 1
             elif move == 'W': c -= 1
-            coords.add((r, c))
             
-        exit_r, exit_c = self.config.exit_m[1], self.config.exit_m[0]
-        coords.discard((exit_r, exit_c))
+            if i + 1 < len(path_str):
+                next_move = path_str[i + 1]
+                path_dict[(r, c)] = arrows[next_move]
+                
+        return path_dict
+    
+    def _is_3x3_open(self, tr: int, tc: int) -> bool:
+        """Перевіряє, чи є квадрат 3х3 з верхнім лівим кутом у (tr, tc) повністю порожнім."""
+        if tr < 0 or tr + 2 >= self.config.height or tc < 0 or tc + 2 >= self.config.width:
+            return False
+            
+        for r in range(tr, tr + 3):
+            for c in range(tc, tc + 2):
+                if self.grid.get(r, c).east != 0:
+                    return False
+                    
+        for r in range(tr, tr + 2):
+            for c in range(tc, tc + 3):
+                if self.grid.get(r, c).south != 0:
+                    return False
+                    
+        return True
+
+    def _causes_3x3_open(self, r: int, c: int, neighbor_r: int, neighbor_c: int) -> bool:
+        """Checks for 3x3 areas after removing the wall"""
+        min_r = min(r, neighbor_r) - 2
+        max_r = max(r, neighbor_r)
+        min_c = min(c, neighbor_c) - 2
+        max_c = max(c, neighbor_c)
         
-        return coords
+        for tr in range(min_r, max_r + 1):
+            for tc in range(min_c, max_c + 1):
+                if self._is_3x3_open(tr, tc):
+                    return True
+        return False
+
+    def _make_imperfect(self) -> None:
+        """Randomly deletes walls to make maze imperfect"""
+        walls_to_break = (self.config.width * self.config.height) * 0.2
+        
+        broken = 0
+        attempts = 0
+        max_attempts = walls_to_break * 10
+        
+        while broken < walls_to_break and attempts < max_attempts:
+            attempts += 1
+            
+            r = self.random.randrange(1, self.config.height - 1)
+            c = self.random.randrange(1, self.config.width - 1)
+            
+            if self.is_42_cell(r, c):
+                continue
+                
+            wall_to_break = self.random.randrange(4)
+            cell = self.grid.get(r, c)
+            
+            if (wall_to_break == 0 and cell.north == 0) or \
+               (wall_to_break == 1 and cell.east == 0) or \
+               (wall_to_break == 2 and cell.south == 0) or \
+               (wall_to_break == 3 and cell.west == 0):
+                continue
+            
+            neighbor_r, neighbor_c = self.grid.rm_wall(r, c, wall_to_break)
+            
+            if self.is_42_cell(neighbor_r, neighbor_c):
+                self.grid.restore_wall(r, c, wall_to_break)
+            if self._causes_3x3_open(r, c, neighbor_r, neighbor_c):
+                self.grid.restore_wall(r, c, wall_to_break)
+            else:
+                broken += 1
