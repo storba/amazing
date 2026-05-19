@@ -1,6 +1,4 @@
-from dataclasses import dataclass
 
-# @dataclass(frozen=True)
 class MazeConfig:
     """Configuration class for parsing and storing settings."""
 
@@ -11,7 +9,6 @@ class MazeConfig:
     output_file: str | None = None
     perfect: bool | None = None
     seed: int | None = None
-    display: str = "ascii"
 
     def __init__(self, config_path: str) -> None:
         try:
@@ -20,7 +17,7 @@ class MazeConfig:
                     line = line.strip()
                     if line.startswith("#") or not line:
                         continue
-                    
+
                     sep_idx = line.find("=")
                     if sep_idx == -1:
                         raise ValueError(f"Incorrect line format: '{line}'")
@@ -42,11 +39,15 @@ class MazeConfig:
             elif key in ("ENTRY", "EXIT"):
                 coords = value.split(",")
                 if len(coords) != 2:
-                    raise ValueError(f"Incorrect coordinates: '{original_line}'")
+                    raise ValueError(
+                        f"Incorrect coordinates: '{original_line}'"
+                        )
                 x_str = coords[0].strip()
-                y_str = coords[1].strip()                
+                y_str = coords[1].strip()
                 if not x_str or not y_str:
-                    raise ValueError(f"Missing coordinate value: '{original_line}'")
+                    raise ValueError(
+                        f"Missing coordinate value: '{original_line}'"
+                        )
                 parsed_coords = (int(x_str), int(y_str))
                 if key == "ENTRY":
                     self.entry = parsed_coords
@@ -63,42 +64,42 @@ class MazeConfig:
                     raise ValueError(f"Unknown bool value: '{original_line}'")
             elif key == "SEED":
                 self.seed = int(value)
-            elif key == "DISPLAY":
-                if value not in ("ascii", "window"):
-                    raise ValueError(f"Unknown display type: '{original_line}'")
-                self.display = value
             else:
                 raise ValueError(f"Unknown parameter: '{original_line}'")
         except ValueError as e:
             raise ValueError(f"Invalid value in line '{original_line}': {e}")
 
     def validate_config(self) -> None:
-        missing_fields = []
-        if self.width is None: missing_fields.append("WIDTH")
-        if self.height is None: missing_fields.append("HEIGHT")
-        if self.entry is None: missing_fields.append("ENTRY")
-        if self.exit_m is None: missing_fields.append("EXIT")
-        if self.output_file is None: missing_fields.append("OUTPUT_FILE")
-        if self.perfect is None: missing_fields.append("PERFECT")
-
-        if missing_fields:
-            raise ValueError(f"Missing mandatory configuration keys: {', '.join(missing_fields)}")
+        if self.width is None:
+            raise ValueError("WIDTH is required")
+        if self.height is None:
+            raise ValueError("HEIGHT is required")
+        if self.entry is None:
+            raise ValueError("ENTRY is required")
+        if self.exit_m is None:
+            raise ValueError("EXIT is required")
+        if self.output_file is None:
+            raise ValueError("OUTPUT_FILE is required")
 
         if not (0 < self.width < 300):
-            raise ValueError(f"WIDTH must be between 1 and 299, got {self.width}")
+            raise ValueError(
+                f"WIDTH must be between 1 and 299, got {self.width}"
+                )
         if not (0 < self.height < 150):
-            raise ValueError(f"HEIGHT must be between 1 and 149, got {self.height}")
-        if not (0 <= self.entry[0] < self.width and 0 <= self.entry[1] < self.height):
-            raise ValueError(f"ENTRY coordinates {self.entry} are out of bounds")
-        if not (0 <= self.exit_m[0] < self.width and 0 <= self.exit_m[1] < self.height):
-            raise ValueError(f"EXIT coordinates {self.exit_m} are out of bounds")
+            raise ValueError(
+                f"HEIGHT must be between 1 and 149, got {self.height}"
+                )
+        if not (0 <= self.entry[0] < self.width
+                and 0 <= self.entry[1] < self.height):
+            raise ValueError(
+                f"ENTRY coordinates {self.entry} are out of bounds"
+                )
+        if not (0 <= self.exit_m[0] < self.width
+                and 0 <= self.exit_m[1] < self.height):
+            raise ValueError(
+                f"EXIT coordinates {self.exit_m} are out of bounds"
+                )
         if self.entry == self.exit_m:
             raise ValueError("ENTRY and EXIT coordinates cannot be same")
         if not self.output_file.endswith(".txt"):
             raise ValueError(f"Output file is not .txt: {self.output_file}")
-
-# def main():
-# 	MazeConfig("config.txt")
-
-# if __name__ == "__main__":
-#     main()
