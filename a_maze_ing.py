@@ -66,7 +66,7 @@ def main():
         run_interactive(config)
     except FileNotFoundError as e:
         print(e.args[0])
-    except PermissionError:
+    except PermissionError as e:
         print(e.args[0])
     except ValueError as e:
         print(e.args[0])
