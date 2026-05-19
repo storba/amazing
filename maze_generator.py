@@ -151,7 +151,8 @@ class Maze():
                 file.write(solution_path + '\n')
         except Exception as e:
             print(f"Output_file error: {e}")
-    def draw_maze_in_terminal(self, path_str: str = "") -> None:
+    def draw_maze_in_terminal(self, path_str: str = "", path_color: str = "") -> None:
+        RESET = '\033[0m' if path_color else ''
         path_map = self._get_path_map(path_str) if path_str else {}
         print('+' + '+'.join('---' for _ in range(self.config.width)) + '+')
         for r in range(self.config.height):
@@ -165,7 +166,7 @@ class Maze():
                 elif self.is_42_cell(r, c):
                     row_str += '███'
                 elif (r, c) in path_map:
-                    row_str += path_map[(r, c)]
+                    row_str += path_color + path_map[(r, c)] + RESET
                 else:
                     row_str += '   '
                 row_str += ' ' if cell.east == 0 else '|'
