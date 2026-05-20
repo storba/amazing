@@ -55,6 +55,8 @@ def run_interactive(config_path: str) -> None:
             redraw()
         elif choice == "4" or choice == "q":
             break
+        else:
+            redraw()
 
 
 def main() -> None:

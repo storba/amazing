@@ -409,8 +409,8 @@ class Maze:
         while broken < walls_to_break and attempts < max_attempts:
             attempts += 1
 
-            r = self.random.randrange(1, self.config.height - 1)
-            c = self.random.randrange(1, self.config.width - 1)
+            r = self.random.randrange(0, self.config.height - 1)
+            c = self.random.randrange(0, self.config.width - 1)
 
             if self.is_42_cell(r, c):
                 continue
