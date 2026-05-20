@@ -6,7 +6,7 @@ from maze_generator import Maze
 import os
 
 COLORS      = ['',        '\033[94m', '\033[92m', '\033[96m', '\033[95m', '\033[91m']
-COLOR_NAMES = ['default', 'blue',   'green',    'cyan',     'magenta',  'red'     ]
+COLOR_NAMES = ['default', 'blue',     'green',    'cyan',     'magenta',  'red'     ]
 
 def print_config(cfg: MazeConfig) -> None:
     print(f"Width: {cfg.width}")
@@ -25,7 +25,8 @@ def build_maze(config: MazeConfig) -> tuple[Maze, str]:
     solution_path = maze.solve()
     maze.print_maze_tofile(config.output_file, solution_path)
     return maze, solution_path
-def run_interactive(config: MazeConfig) -> None:
+def run_interactive(config_path: str) -> None:
+    config = MazeConfig(config_path)
     maze, solution_path = build_maze(config)
     show_path = True
     color_idx = 1
@@ -45,6 +46,7 @@ def run_interactive(config: MazeConfig) -> None:
               f"4. Quit")
         choice = input("  Choice 1-4: ").strip()
         if choice == '1':
+            config = MazeConfig(config_path)
             maze, solution_path = build_maze(config)
             redraw()
         elif choice == '2':
@@ -62,8 +64,7 @@ def main():
         print("Not enough arguments")
         return
     try:
-        config = MazeConfig(sys.argv[1])
-        run_interactive(config)
+        run_interactive(sys.argv[1])
     except FileNotFoundError as e:
         print(e.args[0])
     except PermissionError as e:
