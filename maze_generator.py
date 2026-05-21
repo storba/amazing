@@ -81,10 +81,6 @@ class Maze:
             raise ValueError("HEIGHT is required")
         self.config = config
         self.grid = CellGrid(config.width, config.height)
-        # self.entry = config.entry
-        # self.exit = config.exit_m
-        # self.perfect = config.perfect
-        # self.seed = config.seed
         self.random = random.Random(self.config.seed)
         self.generate()
 
@@ -150,6 +146,12 @@ class Maze:
             raise ValueError("WIDTH is required")
         if self.config.height is None:
             raise ValueError("HEIGHT is required")
+        if (self.is_42_cell(self.config.entry[1], self.config.entry[0])):
+            raise ValueError("ENTRY should not be inside 42")
+        if self.config.exit_m is None:
+            raise ValueError("EXIT is required")
+        if (self.is_42_cell(self.config.exit_m[1], self.config.exit_m[0])):
+            raise ValueError("EXIT should not be inside 42")
         for r in range(self.config.height):
             for c in range(self.config.width):
                 if self.is_42_cell(r, c):
