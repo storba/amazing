@@ -20,3 +20,8 @@ _get_path_map
 _is_3x3_open
 All functions in a_maze_ing.py (build_maze, run_interactive, animation, redraw, main)
 _parse_line and validate_config in config_parser.py
+
+3) 2X2 Maze
+PERFECT=False
+
+4) Write a tests?
