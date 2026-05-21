@@ -216,7 +216,8 @@ class Maze:
         self,
         path_str: str = "",
         colors: list[str] | None = None,
-        color_idx: int = 0
+        color_idx: int = 0,
+        anim: int = -1
     ) -> None:
         if colors is None:
             raise ValueError("COLORS is required")
@@ -250,7 +251,11 @@ class Maze:
                         + "███" + colors[color_idx]
                     )
                 elif (r, c) in path_map:
-                    row_str += RESET + path_map[(r, c)] + colors[color_idx]
+                    arrow, path_idx = path_map[(r, c)]
+                    if (path_idx == anim):
+                        row_str += "\033[1;32m" + "███" + RESET
+                    else:
+                        row_str += RESET + arrow + colors[color_idx]
                 else:
                     row_str += "   "
                 row_str += " " if cell.east == 0 else colors[color_idx] + "|"
@@ -323,7 +328,9 @@ class Maze:
 
         return "No valid path found"
 
-    def _get_path_map(self, path_str: str) -> dict[tuple[int, int], str]:
+    PathMapDict = dict[tuple[int, int], tuple[str, int]]
+
+    def _get_path_map(self, path_str: str) -> PathMapDict:
         """Перетворює рядок шляху на словник координат зі стрілочками."""
         if self.config.entry is None:
             raise ValueError("WIDTH is required")
@@ -351,7 +358,7 @@ class Maze:
 
             if i + 1 < len(path_str):
                 next_move = path_str[i + 1]
-                path_dict[(r, c)] = arrows[next_move]
+                path_dict[(r, c)] = (arrows[next_move], i)
 
         return path_dict
 
