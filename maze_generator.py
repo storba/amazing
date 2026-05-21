@@ -427,14 +427,18 @@ class Maze:
         while broken < walls_to_break and attempts < max_attempts:
             attempts += 1
 
-            r = self.random.randrange(0, self.config.height - 1)
-            c = self.random.randrange(0, self.config.width - 1)
+            r = self.random.randrange(0, self.config.height - 2)
+            c = self.random.randrange(0, self.config.width - 2)
 
             if self.is_42_cell(r, c):
                 continue
 
             wall_to_break = self.random.randrange(4)
             cell = self.grid.get(r, c)
+            if wall_to_break == 0 and r == 0:       # would remove top border
+                continue
+            if wall_to_break == 3 and c == 0:       # would remove left border
+                continue
 
             if (
                 (wall_to_break == 0 and cell.north == 0)
