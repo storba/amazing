@@ -219,7 +219,8 @@ class Maze:
         path_str: str = "",
         colors: list[str] | None = None,
         color_idx: int = 0,
-        anim: int = -1
+        anim: int = -1,
+        anim_mode: int = 0
     ) -> None:
         if colors is None:
             raise ValueError("COLORS is required")
@@ -254,8 +255,16 @@ class Maze:
                     )
                 elif (r, c) in path_map:
                     arrow, path_idx = path_map[(r, c)]
-                    if (path_idx == anim):
-                        row_str += "\033[1;32m" + "███" + RESET
+                    if (anim_mode == 1):
+                        if (path_idx == anim):
+                            row_str += "\033[1;32m" + "███" + RESET
+                        else:
+                            row_str += RESET + arrow + colors[color_idx]
+                    elif (anim_mode == 2):
+                        if (path_idx <= anim):
+                            row_str += RESET + arrow + colors[color_idx]
+                        else:
+                            row_str += "   " + colors[color_idx]
                     else:
                         row_str += RESET + arrow + colors[color_idx]
                 else:

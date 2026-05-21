@@ -32,7 +32,7 @@ def run_interactive(config_path: str) -> None:
             color_idx
         )
 
-    def animation() -> None:
+    def animation(num: int) -> None:
         import time
         path_len = len(solution_path) - 1   # number of drawable arrows
         if path_len <= 0:
@@ -43,7 +43,8 @@ def run_interactive(config_path: str) -> None:
                 solution_path if show_path else "",
                 COLS,
                 color_idx,
-                i % path_len
+                i % path_len,
+                num
             )
             time.sleep(0.1)
         redraw()
@@ -55,10 +56,11 @@ def run_interactive(config_path: str) -> None:
             f"\n  1. Regenerate  "
             f"2. Show/hide path [{path_state}]  "
             f"3. Rotate colors [{color_name}]  "
-            f"4. Animation  "
-            f"5. Quit"
+            f"4. Animation1  "
+            f"5. Animation2  "
+            f"6. Quit"
         )
-        choice = input("  Choice 1-5: ").strip()
+        choice = input("  Choice 1-6: ").strip()
         if choice == "1":
             config = MazeConfig(config_path)
             maze, solution_path = build_maze(config)
@@ -70,8 +72,10 @@ def run_interactive(config_path: str) -> None:
             color_idx = (color_idx + 1) % len(COLS)
             redraw()
         elif choice == "4":
-            animation()
-        elif choice == "5" or choice == "q":
+            animation(1)
+        elif choice == "5":
+            animation(2)
+        elif choice == "6" or choice == "q":
             break
         else:
             redraw()
