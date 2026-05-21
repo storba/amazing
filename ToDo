@@ -1,0 +1,22 @@
+1)Critical missing: Reusable package (Chapter VI)
+This is the biggest gap. The subject requires:
+
+A pyproject.toml (or setup.py) to build the package
+A distributable file mazegen-*.whl or mazegen-*.tar.gz at the root of the repo
+The evaluator will ask you to rebuild it from source in a virtualenv
+You have maze_generator.py but none of the packaging files. You need to create:
+
+pyproject.toml      ← build configuration (name=mazegen, version, etc.)
+mazegen-1.0.0-py3-none-any.whl   ← built with: pyt
+
+2)Missing: Docstrings on several functions (Chapter III)
+Required: PEP 257 docstrings on all functions and classes. Missing from:
+
+Cell class and its __str__
+Maze.__init__
+Maze.maze_random
+draw_maze_in_terminal
+_get_path_map
+_is_3x3_open
+All functions in a_maze_ing.py (build_maze, run_interactive, animation, redraw, main)
+_parse_line and validate_config in config_parser.py

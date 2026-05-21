@@ -234,6 +234,8 @@ class Maze:
             raise ValueError("ENTRY is required")
         if self.config.exit_m is None:
             raise ValueError("EXIT is required")
+        if self.config.height < 7 or self.config.width < 9:
+            print("Maze too small for 42")
         print(
             colors[color_idx]
             + "+"

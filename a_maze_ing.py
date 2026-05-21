@@ -53,12 +53,12 @@ def run_interactive(config_path: str) -> None:
         path_state = "ON" if show_path else "OFF"
         color_name = COLOR_NAMES[color_idx]
         print(
-            f"\n  1. Regenerate  "
-            f"2. Show/hide path [{path_state}]  "
-            f"3. Rotate colors [{color_name}]  "
-            f"4. Animation1  "
-            f"5. Animation2  "
-            f"6. Quit"
+            f"\n 1. Regenerate  \n"
+            f" 2. Show/hide path [{path_state}]  \n"
+            f" 3. Rotate colors [{color_name}]  \n"
+            f" 4. Animation1  \n"
+            f" 5. Animation2  \n"
+            f" 6. Quit"
         )
         choice = input("  Choice 1-6: ").strip()
         if choice == "1":
