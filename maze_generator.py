@@ -73,7 +73,7 @@ class CellGrid:
             self.grid[row][col - 1].east = 1
 
 
-class Maze:
+class MazeGenerator:
     def __init__(self, config: MazeConfig) -> None:
         if config.width is None:
             raise ValueError("WIDTH is required")
@@ -429,8 +429,8 @@ class Maze:
         while broken < walls_to_break and attempts < max_attempts:
             attempts += 1
 
-            r = self.random.randrange(0, self.config.height - 2)
-            c = self.random.randrange(0, self.config.width - 2)
+            r = self.random.randrange(0, self.config.height - 1)
+            c = self.random.randrange(0, self.config.width - 1)
 
             if self.is_42_cell(r, c):
                 continue

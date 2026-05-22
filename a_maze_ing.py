@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import sys
 from config_parser import MazeConfig
-from maze_generator import Maze
+from maze_generator import MazeGenerator
 
 COLS = ["\033[0m", "\033[94m", "\033[92m", "\033[96m", "\033[95m", "\033[91m"]
 COLOR_NAMES = ["default", "blue", "green", "cyan", "magenta", "red"]
 
 
-def build_maze(config: MazeConfig) -> tuple[Maze, str]:
-    maze = Maze(config)
+def build_maze(config: MazeConfig) -> tuple[MazeGenerator, str]:
+    maze = MazeGenerator(config)
     if not config.perfect:
         maze._make_imperfect()
     solution_path = maze.solve()
