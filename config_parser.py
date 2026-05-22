@@ -11,6 +11,19 @@ class MazeConfig:
     seed: int | None = None
 
     def __init__(self, config_path: str) -> None:
+        """Parse a KEY=VALUE configuration file and populate this instance.
+
+        Lines starting with '#' and blank lines are ignored.  After parsing,
+        validate_config() is called automatically.
+
+        Args:
+            config_path: Path to the plain-text configuration file.
+
+        Raises:
+            FileNotFoundError: If the file does not exist.
+            PermissionError: If the file cannot be read due to permissions.
+            ValueError: If any line has invalid syntax or an unknown key.
+        """
         try:
             with open(config_path) as file:
                 for line in file:
@@ -31,6 +44,17 @@ class MazeConfig:
             raise PermissionError(f"Permission denied for '{config_path}'")
 
     def _parse_line(self, key: str, value: str, original_line: str) -> None:
+        """Parse a single key-value pair and set the corresponding attribute.
+
+        Args:
+            key: The configuration key (e.g. 'WIDTH').
+            value: The raw value string from the file.
+            original_line: The original line text, used in error messages.
+
+        Raises:
+            ValueError: If the key is unknown, the value cannot be parsed, or
+                coordinate format is incorrect.
+        """
         try:
             if key == "WIDTH":
                 self.width = int(value)
@@ -70,6 +94,16 @@ class MazeConfig:
             raise ValueError(f"Invalid value in line '{original_line}': {e}")
 
     def validate_config(self) -> None:
+        """Validate that all mandatory fields are present and in-range.
+
+        Checks that WIDTH, HEIGHT, ENTRY, EXIT, and OUTPUT_FILE are set,
+        that dimensions are within allowed bounds, that coordinates are inside
+        the maze, that ENTRY ≠ EXIT, and that the output filename ends in
+        '.txt'.
+
+        Raises:
+            ValueError: If any validation check fails.
+        """
         if self.width is None:
             raise ValueError("WIDTH is required")
         if self.height is None:

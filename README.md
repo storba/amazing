@@ -195,3 +195,30 @@ AI (Cursor / Claude) was used for:
 - Explaining why row/col coordinate order matters when calling `is_42_cell`
 
 All AI-generated suggestions were reviewed, tested, and adapted by the team before being included in the project.
+
+## Installation
+
+Create virtual environment:
+```shell
+python3 -m venv .venv
+```
+
+Activate virtual environment:
+```shell
+source .venv/bin/activate
+```
+
+Install build dependency:
+```shell
+pip install build
+```
+
+Build mazegen package:
+```shell
+python -m build
+```
+
+Install mazgen package:
+```
+pip install dist/mazegen-0.0.1-py3-none-any.whl
+```

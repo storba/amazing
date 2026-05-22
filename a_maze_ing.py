@@ -1,13 +1,25 @@
 #!/usr/bin/env python3
 import sys
 from config_parser import MazeConfig
-from maze_generator import MazeGenerator
+from mazegen.maze_generator import MazeGenerator
 
 COLS = ["\033[0m", "\033[94m", "\033[92m", "\033[96m", "\033[95m", "\033[91m"]
 COLOR_NAMES = ["default", "blue", "green", "cyan", "magenta", "red"]
 
 
 def build_maze(config: MazeConfig) -> tuple[MazeGenerator, str]:
+    """Generate a maze from config, solve it, and write the output file.
+
+    Args:
+        config: Validated MazeConfig instance.
+
+    Returns:
+        A tuple of (MazeGenerator, solution_path) where solution_path is the
+        BFS shortest path as a string of N/E/S/W letters.
+
+    Raises:
+        ValueError: If OUTPUT_FILE is not set in the config.
+    """
     maze = MazeGenerator(config)
     if not config.perfect:
         maze._make_imperfect()
@@ -19,12 +31,22 @@ def build_maze(config: MazeConfig) -> tuple[MazeGenerator, str]:
 
 
 def run_interactive(config_path: str) -> None:
+    """Run the interactive terminal session for the maze.
+
+    Generates the initial maze, draws it, then presents a menu loop that
+    supports regeneration, path visibility toggling, colour cycling, and
+    two animation modes.
+
+    Args:
+        config_path: Path to the configuration file.
+    """
     config = MazeConfig(config_path)
     maze, solution_path = build_maze(config)
     show_path = True
     color_idx = 1
 
     def redraw() -> None:
+        """Clear the terminal and redraw the maze with current settings."""
         print("\033[3J\033[2J\033[H", end="", flush=True)
         maze.draw_maze_in_terminal(
             solution_path if show_path else "",
@@ -33,6 +55,14 @@ def run_interactive(config_path: str) -> None:
         )
 
     def animation(num: int) -> None:
+        """Animate the solution path step by step.
+
+        Iterates over every arrow in the path, redrawing the maze on each
+        frame with a 100 ms delay.
+
+        Args:
+            num: Animation mode passed to draw_maze_in_terminal (1 or 2).
+        """
         import time
         path_len = len(solution_path) - 1   # number of drawable arrows
         if path_len <= 0:
@@ -82,6 +112,11 @@ def run_interactive(config_path: str) -> None:
 
 
 def main() -> None:
+    """Entry point: parse the config file argument and start the session.
+
+    Expects exactly one command-line argument: the path to a config file.
+    All errors are caught and printed as a single message without a traceback.
+    """
     if len(sys.argv) < 2:
         print("Not enough arguments")
         return
