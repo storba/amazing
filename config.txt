@@ -2,11 +2,11 @@
 # One KEY=VALUE per line.
 # Lines starting with # are comments.
 
-WIDTH=25
+WIDTH=13
 HEIGHT=18
-ENTRY=0,0
+ENTRY=10,0
 EXIT=10,12
 OUTPUT_FILE=output_maze.txt
-PERFECT=False
+PERFECT=True
 # Optional:
-#SEED=32743
+SEED=32743
