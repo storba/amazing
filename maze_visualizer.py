@@ -1,5 +1,5 @@
 from config_parser import MazeConfig
-from src.mazegen.maze_generator import MazeGenerator
+from mazegen.maze_generator import MazeGenerator
 PathMapDict = dict[tuple[int, int], tuple[str, int]]
 
 
