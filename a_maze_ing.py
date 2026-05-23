@@ -2,7 +2,7 @@
 import sys
 from config_parser import MazeConfig
 from maze_visualizer import MazeVisualizer
-from mazegen.maze_generator import MazeGenerator
+from maze_generator import MazeGenerator
 
 
 def build_maze(config: MazeConfig) -> tuple[MazeGenerator, str]:

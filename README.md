@@ -222,3 +222,6 @@ Install mazgen package:
 ```
 pip install dist/mazegen-0.0.1-py3-none-any.whl
 ```
+## How to use MazeGenerator
+
+

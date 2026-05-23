@@ -9,4 +9,4 @@ EXIT=10,12
 OUTPUT_FILE=output_maze.txt
 PERFECT=True
 # Optional:
-SEED=32743
+# SEED=32743

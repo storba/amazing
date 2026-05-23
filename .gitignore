@@ -1,5 +1,4 @@
 .venv/
-dist/
+.mypy_cache/
 __pycache__
 output_maze.txt
-*.egg-info*

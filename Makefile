@@ -1,6 +1,7 @@
 PYTHON	= python3
 MAIN	= a_maze_ing.py
 CONFIG	= config.txt
+OUR_MODULE = mazegen-1.0.0-py3-none-any.whl
 
 MYPY_FLAGS	= --warn-return-any --warn-unused-ignores \
 			  --ignore-missing-imports --disallow-untyped-defs \
@@ -11,7 +12,7 @@ MYPY_FLAGS	= --warn-return-any --warn-unused-ignores \
 all: run
 
 install:
-	pip install mypy flake8
+	pip install mypy flake8 OUR_MODULE --force-reinstall
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
