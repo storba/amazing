@@ -5,15 +5,18 @@ PathMapDict = dict[tuple[int, int], tuple[str, int]]
 COLS = ["\033[0m", "\033[94m", "\033[92m", "\033[96m", "\033[95m", "\033[91m"]
 COLOR_NAMES = ["default", "blue", "green", "cyan", "magenta", "red"]
 
+
 class MazeVisualizer:
     """Class for maze visualizing"""
-    def __init__(self, maze: MazeGenerator, path: str, config: MazeConfig
-
+    def __init__(
+        self,
+        maze: MazeGenerator,
+        path: str,
+        config: MazeConfig
     ) -> None:
         self.maze = maze
         self.path = path
         self.config = config
-
 
     def run_interactive(self) -> None:
         """Run the interactive terminal session for the maze.

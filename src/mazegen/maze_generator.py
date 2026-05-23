@@ -71,16 +71,18 @@ class CellGrid:
             self.grid[row][col].west = 1
             self.grid[row][col - 1].east = 1
 
+
 class MazeGenerator:
-    def __init__(self,
-                height: int | None,
-                width: int | None,
-                entry: tuple[int, int] | None,
-                exit_m: tuple[int, int] | None,
-                output_file: str | None,
-                perfect: bool | None,
-                seed: int | None
-                 ) -> None:
+    def __init__(
+        self,
+        height: int | None,
+        width: int | None,
+        entry: tuple[int, int] | None,
+        exit_m: tuple[int, int] | None,
+        output_file: str | None,
+        perfect: bool | None,
+        seed: int | None
+    ) -> None:
         if width is None:
             raise ValueError("WIDTH is required")
         if height is None:
