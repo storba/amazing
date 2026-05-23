@@ -1,8 +1,9 @@
 [project]
 name = "mazegen"
-version = "0.0.1"
+version = "1.0.0"
 authors = [
-  { name="Example Author", email="author@example.com" },
+  {name="svpanfil", email="svpanfil@student.codam.nl"},
+  {name="dpohulia", email="dpohulia@student.codam.nl"},
 ]
 description = "Maze Generator"
 readme = "README.md"
@@ -10,14 +11,19 @@ requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+	"License :: OSI Approved :: MIT License",
 ]
-license = "MIT"
-license-files = ["LICEN[CS]E*"]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://projects.intra.42.fr/a-maze-ing/dpohulia"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mazegen"]
+exclude = ["/build_venv"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/build_venv"]
 
 [build-system]
-requires = ["setuptools >= 77.0.3"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,4 +1,3 @@
-from config_parser import MazeConfig
 from dataclasses import dataclass
 from collections import deque
 import random
@@ -72,48 +71,72 @@ class CellGrid:
             self.grid[row][col].west = 1
             self.grid[row][col - 1].east = 1
 
-
 class MazeGenerator:
-    def __init__(self, config: MazeConfig) -> None:
-        if config.width is None:
+    def __init__(self,
+                height: int | None,
+                width: int | None,
+                entry: tuple[int, int] | None,
+                exit_m: tuple[int, int] | None,
+                output_file: str | None,
+                perfect: bool | None,
+                seed: int | None
+                 ) -> None:
+        if width is None:
             raise ValueError("WIDTH is required")
-        if config.height is None:
+        if height is None:
             raise ValueError("HEIGHT is required")
-        self.config = config
-        self.grid = CellGrid(config.width, config.height)
-        self.random = random.Random(self.config.seed)
+        if entry is None:
+            raise ValueError("ENTRY is required")
+        if exit_m is None:
+            raise ValueError("EXIT is required")
+        if output_file is None:
+            raise ValueError("OUTPUT_FILE is required")
+        if perfect is None:
+            raise ValueError("PERFECT is required")
+        # if seed is None:
+        #     seed = None
+
+        self.grid = CellGrid(width, height)
+        self.height = height
+        self.width = width
+        self.entry = entry
+        self.exit_m = exit_m
+        self.output_file = output_file
+        self.perfect = perfect
+        self.seed = seed
+        self.random = random.Random(seed)
         self.generate()
 
     def maze_random(self, row: int, col: int) -> int:
-        if self.config.width is None:
+        if self.width is None:
             raise ValueError("WIDTH is required")
-        if self.config.height is None:
+        if self.height is None:
             raise ValueError("HEIGHT is required")
         if (
             row > 0
-            and row < self.config.width - 1
+            and row < self.width - 1
             and col > 0
-            and col < self.config.height - 1
+            and col < self.height - 1
         ):
             return self.random.randrange(0, 4)
         elif row == 0:
             if col == 0:
                 return self.random.randrange(1, 3)
-            elif col == self.config.height - 1:
+            elif col == self.height - 1:
                 return self.random.randrange(2, 4)
             else:
                 return self.random.randrange(1, 4)
         elif col == 0:
-            if row == self.config.width - 1:
+            if row == self.width - 1:
                 return self.random.randrange(0, 2)
             else:
                 return self.random.randrange(0, 3)
-        elif col == self.config.height - 1:
-            if row == self.config.width - 1:
+        elif col == self.height - 1:
+            if row == self.width - 1:
                 return self.random.choice([0, 3])
             else:
                 return self.random.choice([0, 2, 3])
-        elif row == self.config.width - 1:
+        elif row == self.width - 1:
             return self.random.choice([0, 1, 3])
         else:
             return 0
@@ -125,35 +148,35 @@ class MazeGenerator:
     }
 
     def is_42_cell(self, row: int, col: int) -> bool:
-        if self.config.width is None:
+        if self.width is None:
             raise ValueError("WIDTH is required")
-        if self.config.height is None:
+        if self.height is None:
             raise ValueError("HEIGHT is required")
-        if self.config.height < 7 or self.config.width < 9:
+        if self.height < 7 or self.width < 9:
             return False
-        start_row = (self.config.height - 5) // 2
-        start_col = (self.config.width - 7) // 2
+        start_row = (self.height - 5) // 2
+        start_col = (self.width - 7) // 2
         return (row - start_row, col - start_col) in self.FORTY_TWO
 
     def generate(self) -> None:
         """Generate the maze."""
         stack = []
-        if self.config.entry is None:
+        if self.entry is None:
             raise ValueError("ENTRY is required")
-        col, row = self.config.entry[0], self.config.entry[1]
+        col, row = self.entry[0], self.entry[1]
         self.grid.get(row, col).visited = True
-        if self.config.width is None:
+        if self.width is None:
             raise ValueError("WIDTH is required")
-        if self.config.height is None:
+        if self.height is None:
             raise ValueError("HEIGHT is required")
-        if (self.is_42_cell(self.config.entry[1], self.config.entry[0])):
+        if (self.is_42_cell(self.entry[1], self.entry[0])):
             raise ValueError("ENTRY should not be inside 42")
-        if self.config.exit_m is None:
+        if self.exit_m is None:
             raise ValueError("EXIT is required")
-        if (self.is_42_cell(self.config.exit_m[1], self.config.exit_m[0])):
+        if (self.is_42_cell(self.exit_m[1], self.exit_m[0])):
             raise ValueError("EXIT should not be inside 42")
-        for r in range(self.config.height):
-            for c in range(self.config.width):
+        for r in range(self.height):
+            for c in range(self.width):
                 if self.is_42_cell(r, c):
                     self.grid.get(r, c).visited = True
         while True:
@@ -166,13 +189,13 @@ class MazeGenerator:
             ):
                 neighbors.append((row - 1, col, 0))  # north
             if (
-                col < self.config.width - 1
+                col < self.width - 1
                 and not self.grid.get(row, col + 1).visited
                 and not self.is_42_cell(row, col + 1)
             ):
                 neighbors.append((row, col + 1, 1))  # east
             if (
-                row < self.config.height - 1
+                row < self.height - 1
                 and not self.grid.get(row + 1, col).visited
                 and not self.is_42_cell(row + 1, col)
             ):
@@ -196,9 +219,9 @@ class MazeGenerator:
 
     def print_maze_tofile(self, filename: str, solution_path: str) -> None:
         """Print the maze to a file."""
-        if self.config.entry is None:
+        if self.entry is None:
             raise ValueError("ENTRY is required")
-        if self.config.exit_m is None:
+        if self.exit_m is None:
             raise ValueError("EXIT is required")
         try:
             with open(filename, "w") as file:
@@ -206,96 +229,26 @@ class MazeGenerator:
                     file.write("".join(str(cell) for cell in row))
                     file.write("\n")
                 file.write("\n")
-                file.write(f"{self.config.entry[0]},"
-                           f"{self.config.entry[1]}\n")
-                file.write(f"{self.config.exit_m[0]},"
-                           f"{self.config.exit_m[1]}\n")
+                file.write(f"{self.entry[0]},"
+                           f"{self.entry[1]}\n")
+                file.write(f"{self.exit_m[0]},"
+                           f"{self.exit_m[1]}\n")
                 file.write(solution_path + "\n")
         except Exception as e:
             print(f"Output_file error: {e}")
 
-    def draw_maze_in_terminal(
-        self,
-        path_str: str = "",
-        colors: list[str] | None = None,
-        color_idx: int = 0,
-        anim: int = -1,
-        anim_mode: int = 0
-    ) -> None:
-        if colors is None:
-            raise ValueError("COLORS is required")
-        RESET = "\033[0m" if colors else ""
-        path_map = self._get_path_map(path_str) if path_str else {}
-        if self.config.width is None:
-            raise ValueError("WIDTH is required")
-        if self.config.height is None:
-            raise ValueError("HEIGHT is required")
-        if self.config.entry is None:
-            raise ValueError("ENTRY is required")
-        if self.config.exit_m is None:
-            raise ValueError("EXIT is required")
-        if self.config.height < 7 or self.config.width < 9:
-            print("Maze too small for 42")
-        print(
-            colors[color_idx]
-            + "+"
-            + "+".join("---" for _ in range(self.config.width))
-            + "+"
-        )
-        for r in range(self.config.height):
-            row_str = "|"
-            for c in range(self.config.width):
-                cell = self.grid.get(r, c)
-                if c == self.config.entry[0] and r == self.config.entry[1]:
-                    row_str += RESET + "█S█" + colors[color_idx]
-                elif c == self.config.exit_m[0] and r == self.config.exit_m[1]:
-                    row_str += RESET + "█E█" + colors[color_idx]
-                elif self.is_42_cell(r, c):
-                    row_str += (
-                        colors[(color_idx + 1) % len(colors)]
-                        + "███" + colors[color_idx]
-                    )
-                elif (r, c) in path_map:
-                    arrow, path_idx = path_map[(r, c)]
-                    if (anim_mode == 1):
-                        if (path_idx == anim):
-                            row_str += "\033[1;32m" + "███" + RESET
-                        else:
-                            row_str += RESET + arrow + colors[color_idx]
-                    elif (anim_mode == 2):
-                        if (path_idx <= anim):
-                            row_str += RESET + arrow + colors[color_idx]
-                        else:
-                            row_str += "   " + colors[color_idx]
-                    else:
-                        row_str += RESET + arrow + colors[color_idx]
-                else:
-                    row_str += "   "
-                row_str += " " if cell.east == 0 else colors[color_idx] + "|"
-            print(row_str)
-            bottom = colors[color_idx] + "+"
-            for c in range(self.config.width):
-                cell = self.grid.get(r, c)
-                bottom += (
-                    "   " if cell.south == 0 else colors[color_idx]
-                    + "---"
-                )
-                bottom += colors[color_idx] + "+"
-            print(bottom)
-        print(RESET)
-
     def solve(self) -> str:
         """Finds the shortest path from entry to exit using BFS."""
-        if self.config.entry is None:
+        if self.entry is None:
             raise ValueError("WIDTH is required")
-        if self.config.exit_m is None:
+        if self.exit_m is None:
             raise ValueError("HEIGHT is required")
-        if self.config.width is None:
+        if self.width is None:
             raise ValueError("WIDTH is required")
-        if self.config.height is None:
+        if self.height is None:
             raise ValueError("HEIGHT is required")
-        start_col, start_row = self.config.entry
-        target_col, target_row = self.config.exit_m
+        start_col, start_row = self.entry
+        target_col, target_row = self.exit_m
         queue = deque([(start_row, start_col, "")])
 
         visited = set()
@@ -315,7 +268,7 @@ class MazeGenerator:
                 visited.add((r - 1, c))
                 queue.append((r - 1, c, path + "N"))
             if (
-                c < self.config.width - 1
+                c < self.width - 1
                 and cell.east == 0
                 and (r, c + 1) not in visited
                 and not self.is_42_cell(r, c + 1)
@@ -323,7 +276,7 @@ class MazeGenerator:
                 visited.add((r, c + 1))
                 queue.append((r, c + 1, path + "E"))
             if (
-                r < self.config.height - 1
+                r < self.height - 1
                 and cell.south == 0
                 and (r + 1, c) not in visited
                 and not self.is_42_cell(r + 1, c)
@@ -341,50 +294,16 @@ class MazeGenerator:
 
         return "No valid path found"
 
-    PathMapDict = dict[tuple[int, int], tuple[str, int]]
-
-    def _get_path_map(self, path_str: str) -> PathMapDict:
-        """Перетворює рядок шляху на словник координат зі стрілочками."""
-        if self.config.entry is None:
-            raise ValueError("WIDTH is required")
-        if self.config.exit_m is None:
-            raise ValueError("HEIGHT is required")
-        if self.config.width is None:
-            raise ValueError("WIDTH is required")
-        if self.config.height is None:
-            raise ValueError("HEIGHT is required")
-        c, r = self.config.entry[0], self.config.entry[1]
-        path_dict = {}
-        arrows = {"N": " ↑ ", "S": " ↓ ", "E": " → ", "W": " ← "}
-
-        for i in range(len(path_str)):
-            move = path_str[i]
-
-            if move == "N":
-                r -= 1
-            elif move == "S":
-                r += 1
-            elif move == "E":
-                c += 1
-            elif move == "W":
-                c -= 1
-
-            if i + 1 < len(path_str):
-                next_move = path_str[i + 1]
-                path_dict[(r, c)] = (arrows[next_move], i)
-
-        return path_dict
-
     def _is_3x3_open(self, tr: int, tc: int) -> bool:
-        if self.config.width is None:
+        if self.width is None:
             raise ValueError("WIDTH is required")
-        if self.config.height is None:
+        if self.height is None:
             raise ValueError("HEIGHT is required")
         if (
             tr < 0
-            or tr + 2 >= self.config.height
+            or tr + 2 >= self.height
             or tc < 0
-            or tc + 2 >= self.config.width
+            or tc + 2 >= self.width
         ):
             return False
 
@@ -416,11 +335,11 @@ class MazeGenerator:
 
     def _make_imperfect(self) -> None:
         """Randomly deletes walls to make maze imperfect"""
-        if self.config.width is None:
+        if self.width is None:
             raise ValueError("WIDTH is required")
-        if self.config.height is None:
+        if self.height is None:
             raise ValueError("HEIGHT is required")
-        walls_to_break = (self.config.width * self.config.height) * 0.2
+        walls_to_break = (self.width * self.height) * 0.2
 
         broken = 0
         attempts = 0
@@ -429,8 +348,8 @@ class MazeGenerator:
         while broken < walls_to_break and attempts < max_attempts:
             attempts += 1
 
-            r = self.random.randrange(0, self.config.height - 1)
-            c = self.random.randrange(0, self.config.width - 1)
+            r = self.random.randrange(0, self.height - 1)
+            c = self.random.randrange(0, self.width - 1)
 
             if self.is_42_cell(r, c):
                 continue
