@@ -21,12 +21,12 @@ debug:
 	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 lint:
-	flake8 .
-	mypy . $(MYPY_FLAGS)
+	flake8 .--exclude .venv 
+	mypy . $(MYPY_FLAGS) --exclude .venv 
 
 lint-strict:
-	flake8 .
-	mypy . --strict
+	flake8 . --exclude=.venv 
+	mypy . --strict --exclude .venv 
 
 clean:
 	rm -rf __pycache__ .mypy_cache

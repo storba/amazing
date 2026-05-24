@@ -89,63 +89,61 @@ For **imperfect mazes** (`PERFECT=False`), roughly 20 % of the remaining walls a
 
 **Why this algorithm?** The recursive backtracker is straightforward to implement and reason about, produces mazes with long winding corridors (good visual quality), and integrates naturally with the "42" pattern (pre-marked cells are simply treated as permanently visited).
 
-## Reusable module
+## Reusable module — `MazeGenerator`
 
-The maze generation logic lives entirely in `maze_generator.py` and is packaged as `mazegen-*` (`.whl` / `.tar.gz`) at the root of the repository.
+The maze generator is a standalone module in `maze_generator.py`. It is packaged as `mazegen-*.whl` / `mazegen-*.tar.gz` in `dist/`.
 
-### Installation
+### Install
 
 ```bash
-pip install mazegen-*.whl
+pip install dist/mazegen-1.0.0-py3-none-any.whl
 ```
 
 ### Basic usage
 
 ```python
-from maze_generator import Maze
-from config_parser import MazeConfig
+from maze_generator import MazeGenerator
 
-config = MazeConfig("config.txt")   # load from file
-maze = Maze(config)                 # generates a perfect maze immediately
+maze = MazeGenerator(
+    height=16,
+    width=40,
+    entry=(0, 7),              # (col, row)
+    exit_m=(39, 15),
+    output_file="output_maze.txt",
+    perfect=True,
+    seed=32743,                # optional; None for random
+)
 
-# make it imperfect (optional)
-maze._make_imperfect()
-
-# solve — returns a string like "EESSWN..."
-path = maze.solve()
-
-# draw in terminal
-maze.draw_maze_in_terminal(path)
-
-# save to file
-maze.print_maze_tofile("output.txt", path)
+path = maze.solve()            # e.g. "EESSWN..."
+maze.print_maze_tofile("output_maze.txt", path)
 ```
+
+For an imperfect maze, pass `perfect=False` and call `maze._make_imperfect()` before solving.
 
 ### Custom parameters
 
-Edit `config.txt` or create a new one:
+| Parameter | Description |
+|-----------|-------------|
+| `height`, `width` | Maze size in cells |
+| `entry`, `exit_m` | Start and end as `(col, row)` |
+| `perfect` | `True` = perfect maze; `False` = call `_make_imperfect()` |
+| `seed` | Integer for reproducible generation, or `None` |
+| `output_file` | Filename used for validation (must end in `.txt`) |
 
-```
-WIDTH=20
-HEIGHT=15
-ENTRY=0,0
-EXIT=19,14
-OUTPUT_FILE=my_maze.txt
-PERFECT=True
-SEED=42
-```
+### Accessing the structure and solution
 
-### Accessing the structure
+The in-memory maze is **not** the same format as the output file.
+
+**In memory** — `maze.grid.grid` is a `list[list[Cell]]`. Each `Cell` has wall flags (`1` = closed, `0` = open):
 
 ```python
-cell = maze.grid.get(row, col)   # returns a Cell object
-cell.north   # 1 = wall closed, 0 = open
-cell.east
-cell.south
-cell.west
+cell = maze.grid.grid[row][col]
+cell.north, cell.east, cell.south, cell.west
 ```
 
-The solution is a plain string of cardinal letters (`N`, `E`, `S`, `W`) returned by `maze.solve()`.
+**Solution** — `maze.solve()` returns the shortest path as a string of `N`, `E`, `S`, `W` letters.
+
+**Output file** — `print_maze_tofile()` writes one hex digit per cell (see [Output file format](#output-file-format)), then entry, exit, and the solution path.
 
 ## Team and project management
 
@@ -218,10 +216,8 @@ Build mazegen package:
 python -m build
 ```
 
-Install mazgen package:
-```
-pip install dist/mazegen-0.0.1-py3-none-any.whl
-```
-## How to use MazeGenerator
+Install mazegen package:
 
-
+```bash
+pip install dist/mazegen-1.0.0-py3-none-any.whl
+```
