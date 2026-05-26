@@ -1,3 +1,16 @@
+Metadata-Version: 2.4
+Name: mazegen
+Version: 0.0.1
+Summary: Maze Generator
+Author-email: Example Author <author@example.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/pypa/sampleproject
+Project-URL: Issues, https://github.com/pypa/sampleproject/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+
 *This project has been created as part of the 42 curriculum by svpanfil, dpohulia.*
 
 # A-Maze-ing
@@ -46,10 +59,9 @@ After the maze is drawn, the following options are available:
 ```
 1. Regenerate          — generate a new random maze
 2. Show/hide path      — toggle the solution path arrows
-3. Rotate colors       — cycle the wall/42 pattern colours
-4. Animation 1           — animate the solution path step by step
-5. Animation 2			 — animate the solution path step by step
-6. Quit
+3. Rotate colors       — cycle the wall/path colour
+4. Animation           — animate the solution path step by step
+5. Quit
 ```
 
 ## Configuration file format
@@ -65,6 +77,7 @@ One `KEY=VALUE` pair per line. Lines starting with `#` are comments and are igno
 | `OUTPUT_FILE` | yes | Output filename (must end in `.txt`) | `OUTPUT_FILE=output_maze.txt` |
 | `PERFECT` | yes | `True` = perfect maze, `False` = imperfect | `PERFECT=False` |
 | `SEED` | no | Integer seed for reproducible generation | `SEED=32743` |
+| `DISPLAY` | no | `ascii` (default) or `window` | `DISPLAY=ascii` |
 
 Default `config.txt` is included in the repository.
 
@@ -89,61 +102,63 @@ For **imperfect mazes** (`PERFECT=False`), roughly 20 % of the remaining walls a
 
 **Why this algorithm?** The recursive backtracker is straightforward to implement and reason about, produces mazes with long winding corridors (good visual quality), and integrates naturally with the "42" pattern (pre-marked cells are simply treated as permanently visited).
 
-## Reusable module — `MazeGenerator`
+## Reusable module
 
-The maze generator is a standalone module in `maze_generator.py`. It is packaged as `mazegen-*.whl`.
+The maze generation logic lives entirely in `maze_generator.py` and is packaged as `mazegen-*` (`.whl` / `.tar.gz`) at the root of the repository.
 
-### Install
+### Installation
 
 ```bash
-pip install mazegen-1.0.0-py3-none-any.whl
+pip install mazegen-*.whl
 ```
 
 ### Basic usage
 
 ```python
-from mazegen import MazeGenerator
+from maze_generator import Maze
+from config_parser import MazeConfig
 
-maze = MazeGenerator(
-    height=16,
-    width=40,
-    entry=(0, 7),              # (col, row)
-    exit_m=(39, 15),
-    output_file="output_maze.txt",
-    perfect=True,
-    seed=32743,                # optional; None for random
-)
+config = MazeConfig("config.txt")   # load from file
+maze = Maze(config)                 # generates a perfect maze immediately
 
-path = maze.solve()            # e.g. "EESSWN..."
-maze.print_maze_to_file("output_maze.txt", path)
+# make it imperfect (optional)
+maze._make_imperfect()
+
+# solve — returns a string like "EESSWN..."
+path = maze.solve()
+
+# draw in terminal
+maze.draw_maze_in_terminal(path)
+
+# save to file
+maze.print_maze_tofile("output.txt", path)
 ```
-
-For an imperfect maze, pass `perfect=False`.
 
 ### Custom parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| `height`, `width` | Maze size in cells |
-| `entry`, `exit_m` | Start and end as `(col, row)` |
-| `perfect` | `True` = perfect maze; `False` for imperfect |
-| `seed` | Integer for reproducible generation, or `None` |
-| `output_file` | Filename used for validation (must end in `.txt`) |
+Edit `config.txt` or create a new one:
 
-### Accessing the structure and solution
-
-The in-memory maze is **not** the same format as the output file.
-
-**In memory** — `maze.grid.grid` is a `list[list[Cell]]`. Each `Cell` has wall flags (`1` = closed, `0` = open):
-
-```python
-cell = maze.grid.grid[row][col]
-cell.north, cell.east, cell.south, cell.west
+```
+WIDTH=20
+HEIGHT=15
+ENTRY=0,0
+EXIT=19,14
+OUTPUT_FILE=my_maze.txt
+PERFECT=True
+SEED=42
 ```
 
-**Solution** — `maze.solve()` returns the shortest path as a string of `N`, `E`, `S`, `W` letters.
+### Accessing the structure
 
-**Output file** — `print_maze_to_file()` writes one hex digit per cell (see [Output file format](#output-file-format)), then entry, exit, and the solution path.
+```python
+cell = maze.grid.get(row, col)   # returns a Cell object
+cell.north   # 1 = wall closed, 0 = open
+cell.east
+cell.south
+cell.west
+```
+
+The solution is a plain string of cardinal letters (`N`, `E`, `S`, `W`) returned by `maze.solve()`.
 
 ## Team and project management
 
@@ -168,10 +183,10 @@ We split the work by layer: svpanfil owned the core generation engine while dpoh
 
 - The `MazeConfig` dataclass uses `| None` fields validated at runtime; using a stricter type-safe approach from the start would have eliminated several mypy warnings.
 - More maze generation algorithms (Prim's, Kruskal's) could be added to compare visual styles.
-- Animation in terminal can be improved: instead of redraw full maze each time, it should redraw one cell
 
 ### Tools used
 
+- **Cursor** (AI-assisted IDE) — used for code suggestions, debugging hints, and reviewing logic
 - **mypy** — static type checking
 - **flake8** — style linting
 - **Git** — version control and collaboration
@@ -192,7 +207,7 @@ AI (Cursor / Claude) was used for:
 - Debugging mypy `--strict` errors related to `tuple[int, int] | None` indexing
 - Explaining why row/col coordinate order matters when calling `is_42_cell`
 
-All AI-generated suggestions were reviewed, tested, and adapted before being included in the project.
+All AI-generated suggestions were reviewed, tested, and adapted by the team before being included in the project.
 
 ## Installation
 
@@ -216,8 +231,7 @@ Build mazegen package:
 python -m build
 ```
 
-Install mazegen package:
-
-```bash
-pip install mazegen-1.0.0-py3-none-any.whl
+Install mazgen package:
+```
+pip install dist/mazegen-0.0.1-py3-none-any.whl
 ```

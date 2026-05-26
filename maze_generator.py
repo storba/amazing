@@ -131,13 +131,13 @@ class MazeGenerator:
         if self.output_file is None:
             raise ValueError("OUTPUT_FILE is required")
 
-        if not (0 < self.width < 300):
+        if not (0 < self.width < 239):
             raise ValueError(
-                f"WIDTH must be between 1 and 299, got {self.width}"
+                f"WIDTH must be between 1 and 238, got {self.width}"
                 )
-        if not (0 < self.height < 150):
+        if not (0 < self.height < 118):
             raise ValueError(
-                f"HEIGHT must be between 1 and 149, got {self.height}"
+                f"HEIGHT must be between 1 and 117, got {self.height}"
                 )
         if not (0 <= self.entry[0] < self.width
                 and 0 <= self.entry[1] < self.height):
@@ -151,6 +151,10 @@ class MazeGenerator:
                 )
         if self.entry == self.exit_m:
             raise ValueError("ENTRY and EXIT coordinates cannot be same")
+        if (self.is_42_cell(self.entry[1], self.entry[0])):
+            raise ValueError("ENTRY should not be inside 42")
+        if (self.is_42_cell(self.exit_m[1], self.exit_m[0])):
+            raise ValueError("EXIT should not be inside 42")
         if not self.output_file.endswith(".txt"):
             raise ValueError(f"Output file is not .txt: {self.output_file}")
 
@@ -216,12 +220,8 @@ class MazeGenerator:
             raise ValueError("WIDTH is required")
         if self.height is None:
             raise ValueError("HEIGHT is required")
-        if (self.is_42_cell(self.entry[1], self.entry[0])):
-            raise ValueError("ENTRY should not be inside 42")
         if self.exit_m is None:
             raise ValueError("EXIT is required")
-        if (self.is_42_cell(self.exit_m[1], self.exit_m[0])):
-            raise ValueError("EXIT should not be inside 42")
         for r in range(self.height):
             for c in range(self.width):
                 if self.is_42_cell(r, c):
@@ -263,6 +263,8 @@ class MazeGenerator:
                 row, col = stack.pop()  # backtrack
             else:
                 break  # all cells visited
+        if (not self.perfect):
+            self._make_imperfect()
 
     def print_maze_tofile(self, filename: str, solution_path: str) -> None:
         """Print the maze to a file."""
@@ -302,7 +304,9 @@ class MazeGenerator:
         visited.add((start_row, start_col))
 
         while queue:
+            print(f"before pop {queue}\n")
             r, c, path = queue.popleft()
+            print(f"after pop {queue}\n")
             if r == target_row and c == target_col:
                 return path
             cell = self.grid.get(r, c)

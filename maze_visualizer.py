@@ -1,5 +1,6 @@
 from config_parser import MazeConfig
 from maze_generator import MazeGenerator
+import time
 PathMapDict = dict[tuple[int, int], tuple[str, int]]
 
 
@@ -36,19 +37,26 @@ class MazeVisualizer:
         Args:
             num: Animation mode passed to draw_maze_in_terminal (1 or 2).
         """
-        import time
-        path_len = len(self.path) - 1   # number of drawable arrows
-        if path_len <= 0:
-            return
-        for i in range(path_len * 1):
-            print("\033[3J\033[2J\033[H", end="", flush=True)
-            self.draw_maze_in_terminal(
-                self.path if show_path else "",
-                color_idx,
-                i % path_len,
-                num
-            )
-            time.sleep(0.1)
+        if (show_path):
+            path_len = len(self.path) - 1   # number of drawable arrows
+            if path_len <= 0:
+                return
+            for i in range(path_len * 1):
+                print("\033[3J\033[2J\033[H", end="", flush=True)
+                self.draw_maze_in_terminal(
+                    self.path if show_path else "",
+                    color_idx,
+                    i % path_len,
+                    num
+                )
+                if (self.maze.height < 10):
+                    time.sleep(0.1)
+                elif (self.maze.height < 50):
+                    time.sleep(0.06)
+                elif (self.maze.height < 100):
+                    time.sleep(0.02)
+                else:
+                    time.sleep(0.005)
         self.redraw(show_path, color_idx)
 
     def draw_maze_in_terminal(
