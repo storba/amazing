@@ -304,9 +304,7 @@ class MazeGenerator:
         visited.add((start_row, start_col))
 
         while queue:
-            print(f"before pop {queue}\n")
             r, c, path = queue.popleft()
-            print(f"after pop {queue}\n")
             if r == target_row and c == target_col:
                 return path
             cell = self.grid.get(r, c)
